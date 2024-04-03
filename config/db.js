@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+//kom
 const connectDB = async () => {
   try {
     await mongoose.connect('mongodb+srv://dmgrabski97:RrH4bEG86nt8iLwt@cluster0.k8imvuf.mongodb.net/', {
