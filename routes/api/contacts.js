@@ -42,7 +42,7 @@ router.delete('/:contactId', async (req, res, next) => {
   try {
     const deletedContact = await contactsService.removeContact(req.params.contactId);
     if (!deletedContact) {
-      return res.status(404).json({ message: 'Contact not found' });
+      return res.status(404).json({ message: 'Contact not founds' });
     }
     res.json({ message: 'Contact deleted' });
   } catch (error) {
@@ -83,4 +83,6 @@ router.patch('/:contactId/favorite', async (req, res, next) => {
 module.exports = router;
 
 //dodadkowa zmiana! 
+//zmiany
+
 
