@@ -1,15 +1,15 @@
 const Contact = require('../models/contacts');
 
-async function listContacts() {
-  return Contact.find();
+async function addContact(body) {
+  return Contact.create(body);
 }
 
 async function getContactById(contactId) {
   return Contact.findById(contactId);
 }
 
-async function addContact(body) {
-  return Contact.create(body);
+async function listContacts() {
+  return Contact.find();
 }
 
 async function removeContact(contactId) {
@@ -21,15 +21,15 @@ async function updateContact(contactId, body) {
 }
 
 async function updateStatusContact(contactId, body) {
-  const updatedContact = await Contact.findByIdAndUpdate(contactId, { $set: body }, { new: true });
-  return updatedContact;
+  return Contact.findByIdAndUpdate(contactId, { $set: body }, { new: true });
 }
 
 module.exports = {
-  listContacts,
-  getContactById,
   addContact,
+  getContactById,
+  listContacts,
   removeContact,
   updateContact,
   updateStatusContact,
 };
+
