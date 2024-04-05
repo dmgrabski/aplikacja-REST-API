@@ -1,6 +1,7 @@
 const express = require('express');
 const Joi = require('joi');
 const contactsService = require('../../services/contactsServices');
+const auth = require('../../middleware/auth');
 
 const router = express.Router();
 
@@ -15,16 +16,28 @@ const favoriteSchema = Joi.object({
   favorite: Joi.boolean().required()
 });
 
-router.get('/', async (req, res, next) => {
+router.get('/', auth, async (req, res, next) => {
   try {
-    const contacts = await contactsService.listContacts();
+    const { page = 1, limit = 20, favorite } = req.query;
+    
+    const filterOptions = {};
+    if (favorite !== undefined) {
+      filterOptions.favorite = favorite === 'true';
+    }
+
+    const contacts = await contactsService.listContacts({
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+      filterOptions,
+    });
+    
     res.json(contacts);
   } catch (error) {
     next(error);
   }
 });
 
-router.get('/:contactId', async (req, res, next) => {
+router.get('/:contactId', auth, async (req, res, next) => {
   try {
     const contact = await contactsService.getContactById(req.params.contactId);
     if (!contact) {
@@ -36,7 +49,7 @@ router.get('/:contactId', async (req, res, next) => {
   }
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', auth, async (req, res, next) => {
   const validationResult = contactSchema.validate(req.body);
   if (validationResult.error) {
     return res.status(400).json({ message: validationResult.error.details[0].message });
@@ -50,7 +63,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.delete('/:contactId', async (req, res, next) => {
+router.delete('/:contactId', auth, async (req, res, next) => {
   try {
     const deletedContact = await contactsService.removeContact(req.params.contactId);
     if (!deletedContact) {
@@ -62,7 +75,7 @@ router.delete('/:contactId', async (req, res, next) => {
   }
 });
 
-router.put('/:contactId', async (req, res, next) => {
+router.put('/:contactId', auth, async (req, res, next) => {
   const validationResult = contactSchema.validate(req.body);
   if (validationResult.error) {
     return res.status(400).json({ message: validationResult.error.details[0].message });
@@ -79,7 +92,7 @@ router.put('/:contactId', async (req, res, next) => {
   }
 });
 
-router.patch('/:contactId/favorite', async (req, res, next) => {
+router.patch('/:contactId/favorite', auth, async (req, res, next) => {
   const validationResult = favoriteSchema.validate(req.body);
   if (validationResult.error) {
     return res.status(400).json({ message: validationResult.error.details[0].message });

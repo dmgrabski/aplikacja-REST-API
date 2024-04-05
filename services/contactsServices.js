@@ -8,8 +8,9 @@ async function getContactById(contactId) {
   return Contact.findById(contactId);
 }
 
-async function listContacts() {
-  return Contact.find();
+async function listContacts({ page = 1, limit = 10 } = {}) {
+  const skip = (page - 1) * limit;
+  return Contact.find().skip(skip).limit(limit);
 }
 
 async function removeContact(contactId) {
