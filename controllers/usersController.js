@@ -8,6 +8,7 @@ const registrationSchema = Joi.object({
   password: Joi.string().min(6).required(),
 });
 
+
 exports.signup = async (req, res) => {
   try {
     const { error } = registrationSchema.validate(req.body);
@@ -69,7 +70,7 @@ const loginSchema = Joi.object({
       const token = jwt.sign(
         { userId: user._id },
         process.env.JWT_SECRET,
-        { expiresIn: '1h' }
+        { expiresIn: '7d' }
       );
   
       user.token = token;
@@ -95,7 +96,9 @@ const loginSchema = Joi.object({
   
       res.status(204).send();
     } catch (error) {
-      res.status(401).json({ message: "Not authorized" });
+      console.error(error);
+      const errorMessage = error.message ? error.message : "An unexpected error occurred";
+      res.status(500).json({ message: errorMessage });
     }
   };        
  
@@ -108,7 +111,8 @@ const loginSchema = Joi.object({
         subscription
       });
     } catch (error) {
-      res.status(401).json({ message: "Not authorized" });
+      const errorMessage = error.message ? error.message : "Internal server error";
+      res.status(500).json({ message: errorMessage });
     }
   };
   
