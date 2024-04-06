@@ -3,6 +3,7 @@ const express = require('express')
 const logger = require('morgan')
 const cors = require('cors')
 const connectDB = require('./config/db');
+const contactsRoutes = require('./routes/contactsRoutes');
 
 connectDB();
 
@@ -27,6 +28,8 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message });
 });
+
+app.use('/api/contacts', contactsRoutes)
 
 module.exports = app;
 
