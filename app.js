@@ -31,5 +31,8 @@ app.use((err, req, res, next) => {
 
 app.use('/api/contacts', contactsRoutes)
 
+app.use('/avatars', express.static('public/avatars'));
+
+
 module.exports = app;
 
