@@ -6,6 +6,8 @@ const gravatar = require('gravatar');
 const fs = require('fs').promises;
 const path = require('path');
 const Jimp = require('jimp');
+const { v4: uuidv4 } = require('uuid'); 
+const mailService = require('../services/mailService'); 
 
 const registrationSchema = Joi.object({
   email: Joi.string().email().required(),
@@ -33,19 +35,24 @@ exports.signup = async (req, res) => {
 
     const avatarURL = gravatar.url(email, { s: '200', r: 'pg', d: 'mm' });
     const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationToken = uuidv4();
     const newUser = new User({
       email,
       password: hashedPassword,
       subscription: "starter",
-      avatarURL
+      avatarURL,
+      verify: false,
+      verificationToken
     });
 
     await newUser.save();
+    mailService.sendVerificationEmail(email, verificationToken); 
     res.status(201).json({
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
-        avatarURL: newUser.avatarURL
+        avatarURL: newUser.avatarURL,
+        verificationToken: newUser.verificationToken 
       }
     });
   } catch (error) {
@@ -65,6 +72,10 @@ exports.login = async (req, res) => {
 
     if (!user) {
       return res.status(401).json({ message: "Email or password is wrong" });
+    }
+
+    if (!user.verify) {
+      return res.status(403).json({ message: "Please verify your email first" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -152,6 +163,30 @@ exports.updateAvatar = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Could not update avatar" });
+  }
+};
+
+exports.resendVerificationEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.verify) {
+      return res.status(400).json({ message: "Verification has already been passed" });
+    }
+
+    mailService.sendVerificationEmail(email, user.verificationToken);
+
+    res.status(200).json({ message: "Verification email sent" });
+  } catch (error) {
+    res.status(500).json({ message: error.message || "Internal server error" });
   }
 };
 
