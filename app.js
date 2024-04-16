@@ -5,6 +5,7 @@ const cors = require('cors')
 const connectDB = require('./config/db');
 const contactsRoutes = require('./routes/contactsRoutes');
 
+
 connectDB();
 
 const contactsRouter = require('./routes/api/contacts');
